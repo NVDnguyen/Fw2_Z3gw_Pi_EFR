@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "799347773672",
+    "firebase_url": "https://my-app-9fab6-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "my-app-9fab6",
+    "storage_bucket": "my-app-9fab6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:799347773672:android:fbbee8313a0c170d39795d",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_2"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPgEY5aLmgdo7srGifF4mH24_jTG4uGqk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:799347773672:android:3f40aaeca58f250e39795d",
+        "android_client_info": {
+          "package_name": "com.example.iot_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCPgEY5aLmgdo7srGifF4mH24_jTG4uGqk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
