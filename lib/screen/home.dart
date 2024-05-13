@@ -126,35 +126,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ...widgetsList,
                   ],
                 ),
-                // DraggableGridViewBuilder(
-                //   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                //     crossAxisCount: 2,
-                //     childAspectRatio: MediaQuery.of(context).size.width /
-                //         (MediaQuery.of(context).size.height / 3),
-                //   ),
-                //   children: [
-                //     ...draggableItems,
-                //   ],
-                //   isOnlyLongPress: false,
-                //   dragCompletion: (List<DraggableGridItem> list,
-                //       int beforeIndex, int afterIndex) {
-                //     print('onDragAccept: $beforeIndex -> $afterIndex');
-                //   },
-                //   dragFeedback: (List<DraggableGridItem> list, int index) {
-                //     return Container(
-                //       child: list[index].child,
-                //       width: 200,
-                //       height: 150,
-                //     );
-                //   },
-                //   dragPlaceHolder: (List<DraggableGridItem> list, int index) {
-                //     return PlaceHolderWidget(
-                //       child: Container(
-                //         color: Colors.white,
-                //       ),
-                //     );
-                //   },
-                // )
               ],
             )),
       ),
