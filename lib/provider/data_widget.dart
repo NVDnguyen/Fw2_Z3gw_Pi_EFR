@@ -1,7 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
-import 'package:iot_app/models/users.dart';
 import 'package:iot_app/models/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -36,5 +34,10 @@ class FetchWidgetData {
       return jsonList.map((w) => Widgets.fromJson(w)).toList();
     }
     return [];
+  }
+
+  static Future<void> resetData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('widgets');
   }
 }

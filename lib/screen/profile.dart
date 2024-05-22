@@ -41,7 +41,9 @@ class _profileScreenState extends State<ProfileScreen> {
     // TODO: implement build
 
     return Scaffold(
+      backgroundColor: Color.fromRGBO(247, 248, 250, 1),
       appBar: AppBar(
+        backgroundColor: Color.fromRGBO(247, 248, 250, 1),
         centerTitle: true,
         title: const Text("Profile"),
       ),
@@ -83,8 +85,10 @@ class _profileScreenState extends State<ProfileScreen> {
               const SizedBox(height: 30),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => ProfileSetting()));
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => ProfileSetting()));
                 },
                 child: const Text("Edit Profile"),
                 style: ElevatedButton.styleFrom(
@@ -109,10 +113,10 @@ class _profileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-  
+
   void _logout() {
     FetchUserData.clearDataUser();
-    Navigator.of(context)
-            .pushReplacement(MaterialPageRoute(builder: (context) => WellcomeScreen()));
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => WellcomeScreen()));
   }
 }

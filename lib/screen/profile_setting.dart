@@ -48,7 +48,9 @@ class _ProfileSettingState extends State<ProfileSetting> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromRGBO(247, 248, 250, 1),
       appBar: AppBar(
+        backgroundColor:Color.fromRGBO(247, 248, 250, 1) ,
         title: Text('Edit Profile'),
         // Nút "Back" trên App bar
         leading: IconButton(

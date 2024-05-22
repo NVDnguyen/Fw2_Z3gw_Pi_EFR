@@ -6,17 +6,10 @@ import 'package:flutter_material_color_picker/flutter_material_color_picker.dart
 import 'package:iot_app/constants/properties.dart';
 import 'package:iot_app/models/users.dart';
 import 'package:iot_app/models/widgets.dart';
-import 'package:iot_app/provider/data_user.dart';
 import 'package:iot_app/provider/data_widget.dart';
-import 'package:iot_app/provider/user_provider.dart';
 import 'package:iot_app/services/realtime_firebase.dart';
-import 'package:iot_app/utils/color_utils.dart';
 import 'package:iot_app/utils/widgets_utils.dart';
-import 'package:iot_app/widgets/IoT/gauge.dart';
-import 'package:iot_app/widgets/IoT/gauge_mult.dart';
-import 'package:iot_app/widgets/IoT/switch.dart';
 import 'package:iot_app/widgets/Notice/notice_snackbar.dart';
-import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> fetchgWidgetsList() async {
     try {
+      //FetchWidgetData.resetData();
       listWidgets = await FetchWidgetData.loadWidgets();
       widgetsList = toListWidget(listWidgets);
       draggableItems = widgetsList.map((widget) {
@@ -75,7 +69,9 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromRGBO(247, 248, 250, 1),
       appBar: AppBar(
+        backgroundColor: Color.fromRGBO(247, 248, 250, 1),
         title: Text("Home"),
         actions: [
           IconButton(
@@ -100,29 +96,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSpacing: 10, // Khoảng cách giữa các hàng
                   padding: const EdgeInsets.only(bottom: 180),
                   children: [
-                    const IoTGaugeMulti(
-                      virtualPin: "V1",
-                      name: "Temperature",
-                      max: 100,
-                      min: 0,
-                      meter: "*C",
-                    ),
-                    const IoTGauge(
-                      virtualPin: "V2",
-                      name: "Huminity",
-                      max: 100,
-                      min: 0,
-                      meter: "%",
-                      color: Colors.blueAccent,
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.all(10),
-                      child: IoTSwitch(
-                        virtualPin: "A1",
-                        nameSwitch: "Light Yellow",
-                        colorSwitch: Colors.yellow,
-                      ),
-                    ),
+                    // const IoTGaugeMulti(
+                    //   virtualPin: "V1",
+                    //   name: "Temperature",
+                    //   max: 100,
+                    //   min: 0,
+                    //   meter: "*C",
+                    // ),
                     ...widgetsList,
                   ],
                 ),
