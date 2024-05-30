@@ -21,7 +21,7 @@ Before getting started, ensure you have the following installed:
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/Eggien14/FireWiseTech.git
+   git clone <link>
    ```
 
 2. **Navigate to the project directory**
