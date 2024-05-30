@@ -6,15 +6,12 @@ import 'package:iot_app/models/users.dart';
 import 'package:iot_app/screen/register.dart';
 import 'package:iot_app/services/auth_firebase.dart';
 import 'package:iot_app/provider/data_user.dart';
-import 'package:iot_app/provider/user_provider.dart';
 import 'package:iot_app/widgets/Button/button_form.dart';
 import 'package:iot_app/widgets/Button/button_social.dart';
 import 'package:iot_app/widgets/Notice/notice_snackbar.dart';
 import 'package:iot_app/widgets/Text/text_button.dart';
 import 'package:iot_app/widgets/Text/text_field.dart';
 import 'package:iot_app/widgets/Text/text_title.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,6 +24,7 @@ class _loginScreenState extends State<LoginScreen> {
   late TextEditingController _emailEditingController;
   late TextEditingController _passwordEditingController;
   String? storedData;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -50,137 +48,141 @@ class _loginScreenState extends State<LoginScreen> {
     return Scaffold(
         resizeToAvoidBottomInset: true,
         backgroundColor: Color.fromRGBO(247, 248, 250, 1),
-        body: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const SizedBox(
-                height: 100,
-              ),
-              const SizedBox(
-                width: 150,
-                height: 50,
-                child: TitleTextWidget(text: "Login"),
-              ),
-              const SizedBox(
-                height: 100,
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
-                child: Center(
-                  child: Column(
-                    children: [
-                      Form(
-                          key: _formKey,
-                          child: Column(
-                            children: [
-                              TextFieldtWidget(
-                                labelText: "Email",
-                                textEditingController: _emailEditingController,
-                                icon: Icons.email_outlined,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your email';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(
-                                height: 10,
-                              ),
-                              TextFieldtWidget(
-                                labelText: "Password",
-                                textEditingController:
-                                    _passwordEditingController,
-                                icon: Icons.lock_clock_outlined,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your password';
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ],
-                          )),
-                      const SizedBox(
-                          height: 50,
-                          child: TextButtonWidget(
-                              buttonText:
-                                  "                              Forget Password ?",
-                              screen: LoginScreen())),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      ButtonFormWidget(
-                        colorButton: Color.fromARGB(255, 9, 11, 90),
-                        colorText: Colors.white,
-                        text: "Log in",
-                        onPressed: () {
-                          // Validate form
-                          if (_formKey.currentState!.validate()) {
-                            // If form is valid, proceed with login action
-                            _login(context);
-                          }
-                        },
-                      ),
-                      const SizedBox(
-                        height: 50,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+        body: _isLoading // check login ssf
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const SizedBox(
+                      height: 100,
+                    ),
+                    const SizedBox(
+                      width: 150,
+                      height: 50,
+                      child: TitleTextWidget(text: "Login"),
+                    ),
+                    const SizedBox(
+                      height: 100,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 40),
+                      child: Center(
+                        child: Column(
                           children: [
-                            Text(
-                              "Create New Account ?",
-                              style: TextStyle(
-                                  color: Color.fromARGB(255, 150, 147, 147)),
+                            Form(
+                                key: _formKey,
+                                child: Column(
+                                  children: [
+                                    TextFieldtWidget(
+                                      labelText: "Email",
+                                      textEditingController:
+                                          _emailEditingController,
+                                      icon: Icons.email_outlined,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter your email';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    TextFieldtWidget(
+                                      labelText: "Password",
+                                      textEditingController:
+                                          _passwordEditingController,
+                                      icon: Icons.lock_clock_outlined,
+                                      validator: (value) {
+                                        if (value == null || value.isEmpty) {
+                                          return 'Please enter your password';
+                                        }
+                                        return null;
+                                      },
+                                    ),
+                                  ],
+                                )),
+                            const SizedBox(
+                                height: 50,
+                                child: TextButtonWidget(
+                                    buttonText:
+                                        "                              Forget Password ?",
+                                    screen: LoginScreen())),
+                            const SizedBox(
+                              height: 10,
                             ),
-                            TextButtonWidget(
-                                buttonText: "Sign up", screen: RegisterScreen())
+                            ButtonFormWidget(
+                              colorButton: Color.fromARGB(255, 9, 11, 90),
+                              colorText: Colors.white,
+                              text: "Log in",
+                              onPressed: () {
+                                // Validate form
+                                if (_formKey.currentState!.validate()) {
+                                  // If form is valid, proceed with login action
+                                  _login(context);
+                                }
+                              },
+                            ),
+                            const SizedBox(
+                              height: 50,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Create New Account ?",
+                                    style: TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 150, 147, 147)),
+                                  ),
+                                  TextButtonWidget(
+                                      buttonText: "Sign up",
+                                      screen: RegisterScreen())
+                                ],
+                              ),
+                            ),
+                            const Divider(
+                              color: Color.fromARGB(255, 150, 147, 147),
+                              height: 50,
+                            ),
+                            SocialButtonRow(
+                                onGooglePressed: () async {
+                                  dynamic result = await _auth.signInAnon();
+                                  if (result == null) {
+                                    print("error sign in anonymous.");
+                                  } else {
+                                    print(result);
+                                  }
+                                },
+                                onFacebookPressed: () async {}),
                           ],
                         ),
                       ),
-                      const Divider(
-                        color: Color.fromARGB(255, 150, 147, 147),
-                        height: 50,
-                      ),
-                      SocialButtonRow(
-                          onGooglePressed: () async {
-                            dynamic result = await _auth.signInAnon();
-                            if (result == null) {
-                              print("error sign in anonymous.");
-                            } else {
-                              print(result);
-                            }
-                          },
-                          onFacebookPressed: () async {}),
-                    ],
-                  ),
+                    )
+                  ],
                 ),
-              )
-            ],
-          ),
-        ));
+              ));
   }
 
   void _login(BuildContext context) async {
     try {
       String email = _emailEditingController.text;
       String password = _passwordEditingController.text;
+      setState(() {
+        _isLoading = true;
+      });
       Users user = await _auth.loginUser(email, password);
-      // save in SharedPreferences
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString('userID', user.userID);
-      prefs.setString('username', user.username); // Changed key to 'username'
-      prefs.setString('email', user.email);
-      prefs.setString('address', user.address);
-      prefs.setString('image', user.image);
-      // update user into provider
-      Provider.of<UserProvider>(context, listen: false).updateUser(user);
+      //Provider.of<UserProvider>(context, listen: false).updateUser(user);
       // Fetch stored data after saving
-      if (await FetchUserData.setDataUser(user)) {
+      if (await SharedPreferencesProvider.setDataUser(user)) {
         print("Log in successfully");
         showSnackBar(context, "Log in successfully"); // message
-
+        setState(() {
+          _isLoading = false;
+        });
         //go ahead
         Navigator.pop(context);
         Navigator.of(context)

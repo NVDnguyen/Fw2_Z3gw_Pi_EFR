@@ -1,33 +1,33 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:iot_app/models/users.dart';
 import 'package:iot_app/screen/profile_setting.dart';
 import 'package:iot_app/screen/wellcome.dart';
 import 'package:iot_app/provider/data_user.dart';
+import 'package:iot_app/services/realtime_firebase.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _profileScreenState createState() => _profileScreenState();
+  _ProfileScreenState createState() => _ProfileScreenState();
 }
 
-// ignore: camel_case_types
-class _profileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> {
   late Users user;
   bool isDataLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    FetchUserData1();
+    fetchUserData();
   }
 
-  Future<void> FetchUserData1() async {
+  Future<void> fetchUserData() async {
     try {
-      user = await FetchUserData.getDataUser();
+      Users u = await SharedPreferencesProvider.getDataUser();
+      user = await DataFirebase.getUserRealTime(u);
+      SharedPreferencesProvider.setDataUser(user);
       setState(() {
         isDataLoaded = true;
       });
@@ -38,85 +38,133 @@ class _profileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-
     return Scaffold(
       backgroundColor: Color.fromRGBO(247, 248, 250, 1),
       appBar: AppBar(
         backgroundColor: Color.fromRGBO(247, 248, 250, 1),
-        centerTitle: true,
-        title: const Text("Profile"),
+        iconTheme: IconThemeData(color: Colors.black),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          alignment: Alignment.topCenter,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(height: 20),
-              CircleAvatar(
-                radius: 90,
-                backgroundColor: Colors.grey[300], // Màu nền cho hình tròn
-                child: ClipOval(
-                  child: AspectRatio(
-                    aspectRatio: 1, // Đảm bảo tỷ lệ khung hình là 1:1
-                    child: Image.file(
-                      File(user.image),
-                      fit: BoxFit.cover,
-                    ),
+      body: isDataLoaded
+          ? SingleChildScrollView(
+              child: Center(
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 24),
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundImage: FileImage(File(user.image)),
+                        backgroundColor: Colors.grey.shade200,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        user.username,
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        "@${user.username.toLowerCase().replaceAll(' ', '_')}",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfileSetting(),
+                            ),
+                          );
+                        },
+                        child: Text("Edit Profile"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(255, 227, 230, 235),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 40,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 24),
+                      _buildProfileOption(
+                        icon: Icons.settings,
+                        text: "Settings",
+                        onTap: () {},
+                      ),
+                      Divider(),
+                      _buildProfileOption(
+                        icon: Icons.device_hub_outlined,
+                        text: "My Systems",
+                        onTap: () {},
+                      ),
+                      Divider(),
+                      _buildProfileOption(
+                        icon: Icons.group,
+                        text: "Group ",
+                        onTap: () {},
+                      ),
+                      Divider(),
+                      _buildProfileOption(
+                        icon: Icons.attach_money_sharp,
+                        text: "Donate",
+                        onTap: () {},
+                      ),
+                      Divider(),
+                      _buildProfileOption(
+                        icon: Icons.share,
+                        text: "Share",
+                        onTap: () {},
+                      ),
+                      Divider(),
+                      _buildProfileOption(
+                        icon: Icons.logout,
+                        text: "Log out",
+                        onTap: () {
+                          _logout();
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 30),
-              Text(
-                user.username,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                user.email,
-                style: TextStyle(fontSize: 18, color: Colors.grey),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                user.address,
-                style: TextStyle(fontSize: 18, color: Colors.grey),
-              ),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => ProfileSetting()));
-                },
-                child: const Text("Edit Profile"),
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                ),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  _logout();
-                },
-                child: const Text("   Log Out   "),
-                style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                ),
-              ),
-            ],
-          ),
-        ),
+            )
+          : Center(
+              child: CircularProgressIndicator(),
+            ),
+    );
+  }
+
+  Widget _buildProfileOption({
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.black),
+      title: Text(
+        text,
+        style: TextStyle(fontSize: 18),
       ),
+      trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey),
+      onTap: onTap,
     );
   }
 
   void _logout() {
-    FetchUserData.clearDataUser();
+    SharedPreferencesProvider.clearDataUser();
     Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => WellcomeScreen()));
+      MaterialPageRoute(builder: (context) => WellcomeScreen()),
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iot_app/Layout/layout.dart';
+import 'package:iot_app/screen/home.dart';
 import 'package:iot_app/screen/wellcome.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:iot_app/provider/user_provider.dart';
@@ -41,14 +42,20 @@ class MyHomePage extends StatelessWidget {
     return FutureBuilder<SharedPreferences>(
         future: SharedPreferences.getInstance(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
-          }
-          final prefs = snapshot.data;
-          final isLoggedIn = prefs?.getString('UserID') ?? "";
-          if (isLoggedIn != null) {
-            return WellcomeScreen();
-          } else {
+          try {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator();
+            }
+            final prefs = snapshot.data;
+            //print(prefs?.getString('userID'));
+            final isLoggedIn = prefs?.getString('userID') ?? "1";
+
+            if (isLoggedIn == "1") {
+              return WellcomeScreen();
+            } else {
+              return Layout();
+            }
+          } catch (e) {
             return WellcomeScreen();
           }
         });

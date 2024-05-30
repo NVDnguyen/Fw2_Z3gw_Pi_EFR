@@ -3,7 +3,6 @@ import 'package:iot_app/screen/home.dart';
 import 'package:iot_app/screen/news.dart';
 import 'package:iot_app/screen/profile.dart';
 
-
 class Layout extends StatefulWidget {
   @override
   _LayoutScreenState createState() => _LayoutScreenState();
@@ -25,29 +24,54 @@ class _LayoutScreenState extends State<Layout> {
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.new_releases),
-            label: 'News',
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              spreadRadius: 0,
+              blurRadius: 10,
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
+          child: BottomNavigationBar(
+            backgroundColor: Colors.white,
+            currentIndex: _currentIndex,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            showUnselectedLabels: false,
+            showSelectedLabels: false,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.new_releases),
+                label: 'News',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: 'Profile',
+              ),
+            ],
+            selectedItemColor: Colors.blueAccent,
+            unselectedItemColor: Colors.grey,
           ),
-
-          // Thêm các bottom navigation bar item khác vào đây nếu cần
-        ],
+        ),
       ),
     );
   }

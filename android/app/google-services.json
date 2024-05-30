@@ -1,22 +1,22 @@
 {
   "project_info": {
-    "project_number": "799347773672",
-    "firebase_url": "https://my-app-9fab6-default-rtdb.asia-southeast1.firebasedatabase.app",
-    "project_id": "my-app-9fab6",
-    "storage_bucket": "my-app-9fab6.appspot.com"
+    "project_number": "533473486533",
+    "firebase_url": "https://fire-cloud-f2f21-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "fire-cloud-f2f21",
+    "storage_bucket": "fire-cloud-f2f21.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:799347773672:android:fbbee8313a0c170d39795d",
+        "mobilesdk_app_id": "1:533473486533:android:4799123ed2cb062fe9b2ac",
         "android_client_info": {
-          "package_name": "com.example.flutter_application_2"
+          "package_name": "com.example.firewise_app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCPgEY5aLmgdo7srGifF4mH24_jTG4uGqk"
+          "current_key": "AIzaSyDJZSijFl2n6tCiVWsqZKZDX1uMqRdLClo"
         }
       ],
       "services": {
@@ -27,7 +27,7 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:799347773672:android:3f40aaeca58f250e39795d",
+        "mobilesdk_app_id": "1:533473486533:android:5ec1b06633641f7fe9b2ac",
         "android_client_info": {
           "package_name": "com.example.iot_app"
         }
@@ -35,7 +35,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCPgEY5aLmgdo7srGifF4mH24_jTG4uGqk"
+          "current_key": "AIzaSyDJZSijFl2n6tCiVWsqZKZDX1uMqRdLClo"
         }
       ],
       "services": {

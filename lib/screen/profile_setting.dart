@@ -1,13 +1,14 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:iot_app/Layout/layout.dart';
 import 'package:iot_app/models/users.dart';
+import 'package:iot_app/screen/profile.dart';
 import 'package:iot_app/services/auth_firebase.dart';
 import 'package:iot_app/provider/data_user.dart';
 import 'package:iot_app/provider/image_picker.dart';
 import 'package:iot_app/widgets/Notice/notice_snackbar.dart';
-import 'package:path/path.dart';
 
 class ProfileSetting extends StatefulWidget {
   const ProfileSetting({Key? key}) : super(key: key);
@@ -32,7 +33,7 @@ class _ProfileSettingState extends State<ProfileSetting> {
 
   Future<void> FetchUserData1() async {
     try {
-      user = await FetchUserData.getDataUser();
+      user = await SharedPreferencesProvider.getDataUser();
       _image = user.image;
       // Gán giá trị cũ vào các TextEditingController
       _usernameController.text = user.username;
@@ -50,14 +51,14 @@ class _ProfileSettingState extends State<ProfileSetting> {
     return Scaffold(
       backgroundColor: Color.fromRGBO(247, 248, 250, 1),
       appBar: AppBar(
-        backgroundColor:Color.fromRGBO(247, 248, 250, 1) ,
+        backgroundColor: Color.fromRGBO(247, 248, 250, 1),
         title: Text('Edit Profile'),
         // Nút "Back" trên App bar
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => Layout()));
+            Navigator.pop(context,
+                MaterialPageRoute(builder: (context) => ProfileScreen()));
           },
         ),
       ),
@@ -83,12 +84,12 @@ class _ProfileSettingState extends State<ProfileSetting> {
                           _imagePicker();
                         },
                         child: Container(
-                          padding: EdgeInsets.all(4),
-                          decoration: BoxDecoration(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.camera_alt,
                             color: Colors.grey,
                           ),
@@ -98,7 +99,7 @@ class _ProfileSettingState extends State<ProfileSetting> {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               const Text(
                 'User Name',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -106,7 +107,7 @@ class _ProfileSettingState extends State<ProfileSetting> {
               TextField(
                 controller: _usernameController,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               const Text(
                 'Address',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -115,12 +116,28 @@ class _ProfileSettingState extends State<ProfileSetting> {
                 controller: _addressController,
               ),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  _save(context);
-                },
-                child: const Text('Save Changes'),
-              ),
+              Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                // ElevatedButton(
+                //   onPressed: () {
+                //   Navigator.push(
+                //             context,
+                //             MaterialPageRoute(
+                //               builder: (context) => Layout(),
+                //             ),
+                //           );
+                //   },
+                //   child: const Text('Back'),
+                // ),
+                // const SizedBox(
+                //   width: 30,
+                // ),
+                ElevatedButton(
+                  onPressed: () {
+                    _save(context);
+                  },
+                  child: const Text('Save Changes'),
+                ),
+              ])
             ],
           ),
         ),
@@ -136,9 +153,9 @@ class _ProfileSettingState extends State<ProfileSetting> {
     print(us.username + us.address);
     AuthService _auth = AuthService();
     if (await _auth.updateUserInfo(us)) {
-      if (await FetchUserData.setDataUser(us)) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => Layout()));
+      if (await SharedPreferencesProvider.setDataUser(us)) {
+        Navigator.pop(
+            context, MaterialPageRoute(builder: (context) => ProfileScreen()));
       } else {
         print("FetchUserData.setDataUser fail");
       }

@@ -1,15 +1,15 @@
-import 'dart:math';
+// ignore_for_file: use_build_context_synchronously
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_draggable_gridview/flutter_draggable_gridview.dart';
-import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
-import 'package:iot_app/constants/properties.dart';
-import 'package:iot_app/models/users.dart';
-import 'package:iot_app/models/widgets.dart';
-import 'package:iot_app/provider/data_widget.dart';
+import 'package:iot_app/models/devices.dart';
 import 'package:iot_app/services/realtime_firebase.dart';
-import 'package:iot_app/utils/widgets_utils.dart';
+import 'package:iot_app/widgets/Dashboard/dashboard_widgets.dart';
+import 'package:iot_app/models/users.dart';
+import 'package:iot_app/provider/data_user.dart';
 import 'package:iot_app/widgets/Notice/notice_snackbar.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,241 +20,314 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Users? user;
-  late Users storedData;
+  late Users user;
   bool isDataLoaded = false;
-  late double x = 80;
-  List<String> listIdDevice = [];
-  List<Widget> widgetsList = [];
-  List<Widgets> listWidgets = [];
-  List<DraggableGridItem> draggableItems = [];
+  bool isSystemChossen = false;
+
+  // Create List of SystemLog Objects
+
+  List<Device> lDevice = [];
+  List<Widget> wDashBoard = [];
+  List<Widget> wDashBoard1 = [];
+  List<Widget> wSystems = [];
+  List<Widget> wDevices = [];
+  String selectedDevice = "";
 
   @override
   void initState() {
     super.initState();
-    fetchDeviceId();
-    fetchgWidgetsList();
+    fetchUserData();
   }
 
-  Future<void> fetchgWidgetsList() async {
+  Future<void> fetchUserData() async {
     try {
-      //FetchWidgetData.resetData();
-      listWidgets = await FetchWidgetData.loadWidgets();
-      widgetsList = toListWidget(listWidgets);
-      draggableItems = widgetsList.map((widget) {
-        return DraggableGridItem(
-          //index: widgetsList.indexOf(widget),
-          child: widget,
-        );
-      }).toList();
+      //sys with cloud
+      user = await SharedPreferencesProvider.getDataUser();
+      Users userNew = await DataFirebase.getUserRealTime(user);
+
+      if (userNew != user) {
+        user = userNew;
+        SharedPreferencesProvider.setDataUser(user);
+      }
+      // buid dash board
+      await buildSystemList();
+      setState(() {
+        isDataLoaded = true;
+      });
     } catch (e) {
-      throw e;
+      if (kDebugMode) {
+        print(e.toString());
+      }
     }
   }
 
-  Future<void> fetchDeviceId() async {
+  Future<void> buildSystemList() async {
     try {
-      List<String> getAll = await DataFirebase().getAllDevice();
-      if (getAll != null) {
-        print(getAll);
-        setState(() {
-          listIdDevice = getAll;
-        });
+      Users userNew = await DataFirebase.getUserRealTime(user);
+      if (userNew != user) {
+        user = userNew;
+        SharedPreferencesProvider.setDataUser(user);
       }
+      List<String> listSystems = userNew.getSystemIDs();
+      List<Widget> w = [];
+
+      // parallel
+      List<Future> futures = listSystems.map((e) async {
+        var devicesFuture = DataFirebase.getAllDevices(e);
+        var systemNameFuture = DataFirebase.getNameOfSystem(e);
+        return Future.wait([devicesFuture, systemNameFuture, Future.value(e)]);
+      }).toList();
+
+      // wait for all done
+      var results = await Future.wait(futures);
+
+      // process results
+      for (var result in results) {
+        List<Device> dvc = result[0];
+        String systemName = result[1];
+        String e = result[2];
+
+        w.add(
+          BuildHomeWidgets.buildDeviceCard1(
+            e == selectedDevice,
+            systemName,
+            //'https://i.imgur.com/jFoufpl.jpeg',
+            'https://img.freepik.com/premium-photo/concept-home-devices-multiple-houses-conected-networked_1059430-54450.jpg',
+            onTap: () {
+              setState(() {
+                fetchUserData();
+                buildSystemList();
+                selectedDevice = e;
+                wDevices = [];
+                for (var device in dvc) {
+                  wDevices.add(
+                    BuildHomeWidgets.buildInfoSensor1(device, onPress: () {
+                      // change name
+                      final TextEditingController newNameDevice =
+                          TextEditingController();
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const SizedBox(height: 16),
+                                TextField(
+                                  controller: newNameDevice,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: "New name",
+                                    prefixIcon:
+                                        Icon(Icons.devices_other_outlined),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  updateDeviceName(device, newNameDevice.text);
+                                  setState(() {
+                                    fetchUserData();
+                                    buildSystemList();
+                                  });
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Next'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }),
+                  );
+                  wDevices.add(const SizedBox(height: 20));
+                }
+              });
+            },
+          ),
+        );
+      }
+
+      setState(() {
+        w.isEmpty ? isSystemChossen = true : wSystems = w;
+
+        wDashBoard = [
+          BuildHomeWidgets.buildInfoCard(
+              "Bạn chưa lắp đặt hệ thống thiết bị nào",
+              "Hãy lắp đặt các thiết bị an toàn, để bảo vệ bản thân, gia đình và mọi người xung quanh.",
+              "Hướng cài đặt và sử dụng thiết bị",
+              onTap: () => _launchUrl(Uri.parse('https://shopee.vn/'))),
+          const SizedBox(height: 20),
+          BuildHomeWidgets.buildInfoCard(
+            "Nhà/Công trình bạn theo dõi",
+            "Bạn muốn theo dõi hoạt động an toàn của khu vực khác?",
+            "Quét mã gia nhập ngay",
+            onTap: () => _launchUrl(Uri.parse('https://shopee.vn/')),
+          ),
+        ];
+      });
     } catch (e) {
-      showSnackBar(context, "Fail to fetch device id in firebase");
+      if (kDebugMode) {
+        print('Error building system list: $e');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final TextEditingController systemIDcontroller = TextEditingController();
+    final TextEditingController systemKeycontroller = TextEditingController();
     return Scaffold(
-      backgroundColor: Color.fromRGBO(247, 248, 250, 1),
+      backgroundColor: const Color(0xFFF7F8FA),
       appBar: AppBar(
-        backgroundColor: Color.fromRGBO(247, 248, 250, 1),
-        title: Text("Home"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add_box),
-            onPressed: () {
-              _addWidget(listIdDevice);
-            },
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          "FireWise",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
-        ],
+        ),
+        actions: [],
       ),
-      body: SingleChildScrollView(
-        child: Container(
-            //height: MediaQuery.of(context).size.height,
-            padding: EdgeInsets.all(40),
-            child: Column(
-              children: [
-                GridView.count(
-                  physics: ClampingScrollPhysics(),
-                  shrinkWrap: true,
-                  crossAxisCount: 2, // Số cột
-                  crossAxisSpacing: 10, // Khoảng cách giữa các cột
-                  mainAxisSpacing: 10, // Khoảng cách giữa các hàng
-                  padding: const EdgeInsets.only(bottom: 180),
+      body: isDataLoaded
+          ? SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
                   children: [
-                    // const IoTGaugeMulti(
-                    //   virtualPin: "V1",
-                    //   name: "Temperature",
-                    //   max: 100,
-                    //   min: 0,
-                    //   meter: "*C",
-                    // ),
-                    ...widgetsList,
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          ...wSystems,
+                          BuildHomeWidgets.buildDeviceCard(
+                            "Add Systems",
+                            Icons.add_circle_outline,
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: const Text(
+                                      "Add New System",
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text(
+                                          "Please enter the System ID *",
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        TextField(
+                                          controller: systemIDcontroller,
+                                          decoration: const InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'System ID',
+                                            prefixIcon: Icon(Icons.device_hub),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        const Text(
+                                          "Please enter the Admin key",
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        TextField(
+                                          controller: systemKeycontroller,
+                                          decoration: const InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'Key',
+                                            prefixIcon: Icon(Icons.key),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('Cancel'),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          addSystem(systemIDcontroller.text,
+                                              systemKeycontroller.text);
+                                          setState(() {
+                                            fetchUserData();
+                                            buildSystemList();
+                                          });
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('Add'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
+                    ...(isSystemChossen ? wDashBoard : wDashBoard1),
+                    ...wDevices,
                   ],
                 ),
-              ],
-            )),
-      ),
+              ),
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 
-  void _addWidget(List<String> deviceIDs) {
-    Color _selectedColor = Colors.red;
-    String _selectedDeviceID = deviceIDs.isNotEmpty ? deviceIDs[0] : '';
-    String _selectedType = WIDGET_TYPES[0];
-    late TextEditingController _nameTextEditingController =
-        TextEditingController();
-    late TextEditingController _meterTextEditingController =
-        TextEditingController();
-    late TextEditingController _maxTextEditingController =
-        TextEditingController();
-    late TextEditingController _minTextEditingController =
-        TextEditingController();
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Add Widget"),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Select Device ID"),
-                DropdownMenu<String>(
-                  initialSelection: deviceIDs.first,
-                  onSelected: (String? value) {
-                    // This is called when the user selects an item.
-                    setState(() {
-                      _selectedDeviceID = value!;
-                    });
-                  },
-                  dropdownMenuEntries:
-                      deviceIDs.map<DropdownMenuEntry<String>>((String value) {
-                    return DropdownMenuEntry<String>(
-                        value: value, label: value);
-                  }).toList(),
-                ),
-                const SizedBox(height: 10),
-                const Text("Type"),
-                DropdownMenu<String>(
-                  initialSelection: WIDGET_TYPES.first,
-                  onSelected: (String? value) {
-                    // This is called when the user selects an item.
-                    setState(() {
-                      _selectedType = value!;
-                      if (_selectedType == 'Switch') {
-                        _meterTextEditingController.text = 'No Need';
-                        _maxTextEditingController.text = '1';
-                        _minTextEditingController.text = '0';
-                      } else {
-                        _meterTextEditingController.text = '';
-                        _maxTextEditingController.text = '';
-                        _minTextEditingController.text = '';
-                      }
-                    });
-                  },
-                  dropdownMenuEntries: WIDGET_TYPES
-                      .map<DropdownMenuEntry<String>>((String value) {
-                    return DropdownMenuEntry<String>(
-                        value: value, label: value);
-                  }).toList(),
-                ),
-                const SizedBox(height: 10),
-                const Text("Name"),
-                TextField(
-                  controller: _nameTextEditingController,
-                ),
-                const SizedBox(height: 10),
-                const Text("Meter"),
-                TextField(controller: _meterTextEditingController),
-                const SizedBox(height: 10),
-                const Text("Max"),
-                TextField(controller: _maxTextEditingController),
-                const SizedBox(height: 10),
-                const Text("Min"),
-                TextField(controller: _minTextEditingController),
-                const SizedBox(height: 10),
-                const Text("Color for button/witch"),
-                MaterialColorPicker(
-                    onColorChange: (Color color) {
-                      // Handle color changes
-                      setState(() {
-                        _selectedColor = color;
-                      });
-                    },
-                    selectedColor: Colors.red),
-                const SizedBox(height: 10),
-              ],
-            ),
-          ),
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                try {
-                  // Lấy giá trị từ các trường nhập liệu
-                  String name = _nameTextEditingController.text;
-                  String deviceID = _selectedDeviceID;
-                  String typeWidget = _selectedType;
-                  String meter = _meterTextEditingController.text;
-                  double max =
-                      double.tryParse(_maxTextEditingController.text) ?? 0;
-                  double min =
-                      double.tryParse(_minTextEditingController.text) ?? 0;
-                  if (min >= max) {
-                    showSnackBar(context, "Please enter min < max");
-                    throw e;
-                  }
-                  if (name.trim().isEmpty ||
-                      deviceID.isEmpty ||
-                      typeWidget.isEmpty) throw e;
+  Future<void> addSystem(String idSystem, String key) async {
+    try {
+      if (await DataFirebase.addSystem(idSystem, key, user)) {
+        showSnackBar(context, "Add System Successfully");
+      } else {
+        showSnackBar(context, "Add System Fail");
+      }
+    } catch (e) {
+      showSnackBar(context, "Add System Fail");
+    }
+  }
 
-                  Widgets w = Widgets(
-                      id: deviceID,
-                      type: typeWidget,
-                      name: name,
-                      meter: meter,
-                      max: max,
-                      min: min,
-                      color: _selectedColor.toString());
-                  setState(() {
-                    listWidgets.add(w);
-                    FetchWidgetData.addWidget(w);
-                    widgetsList.add(w.toWidget());
-                  });
-                  showSnackBar(context, "Create successfully");
-                } catch (e) {
-                  print(e.toString());
-                  showSnackBar(context, "Cannot create widget");
-                }
+  Future<void> updateDeviceName(Device device, String text) async {
+    bool isAdmin = user.isAdmin(device.systemID);
+    try {
+      if (isAdmin) {
+        bool status = await DataFirebase.setNameOfDevice(device, text);
+        if (status) {
+          showSnackBar(context, "Change Success");
+        } else {
+          showSnackBar(context, "Cannot change");
+        }
+      } else {
+        showSnackBar(context, "Dont have permission");
+      }
+    } catch (e) {
+      showSnackBar(context, "Cannot change");
+    }
+  }
 
-                // Đóng hộp thoại
-                Navigator.pop(context);
-              },
-              child: const Text("Add"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Đóng hộp thoại
-              },
-              child: const Text("Cancel"),
-            ),
-          ],
-        );
-      },
-    );
+  Future<void> _launchUrl(Uri _url) async {
+    if (!await launchUrl(_url)) {
+      throw Exception('Could not launch $_url');
+    }
   }
 }

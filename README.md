@@ -83,18 +83,24 @@ Here are some screenshots illustrating the app:
 ![Signin Screen](https://i.ibb.co/G7DscXt/Screenshot-2024-05-14-013335.png)
 
 ### Home Screen
-![Home Screen](https://i.ibb.co/Z2xXYdQ/Screenshot-2024-05-14-014017.png)
+![Home Screen](assets\screenshot\1.png)
 
-### Create Widget
-![Home Screen](https://i.ibb.co/NTfKFYs/Screenshot-2024-05-14-013430.png)
+### Add New System
+![Home Screen](assets\screenshot\2.png)
 
-### News Screen
-![News Screen](https://i.ibb.co/DCkb3nS/Screenshot-2024-05-14-013503.png)
+### Home
+![Home Screen](assets\screenshot\3.png)
+
+### Change name of Device
+![News Screen](assets\screenshot\4.png)
+
+### News
+![News Screen](assets\screenshot\5.png)
 
 ### Profile Screen
-![Profile Screen](https://i.ibb.co/Mp1tJ1J/Screenshot-2024-05-14-013451.png)
+![Profile Screen](assets\screenshot\6.png)
 
 ### Edit Profile Screen
-![Edit Profile Screen](https://i.ibb.co/7zNrLZd/Screenshot-2024-05-14-013514.png)
+![Edit Profile Screen](assets\screenshot\7.png)
 
 
