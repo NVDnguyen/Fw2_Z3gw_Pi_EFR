@@ -9,6 +9,7 @@ import 'package:iot_app/provider/data_user.dart';
 import 'package:iot_app/widgets/Button/button_form.dart';
 import 'package:iot_app/widgets/Button/button_social.dart';
 import 'package:iot_app/widgets/Notice/notice_snackbar.dart';
+import 'package:iot_app/widgets/Text/passw_field.dart';
 import 'package:iot_app/widgets/Text/text_button.dart';
 import 'package:iot_app/widgets/Text/text_field.dart';
 import 'package:iot_app/widgets/Text/text_title.dart';
@@ -92,14 +93,14 @@ class _loginScreenState extends State<LoginScreen> {
                                     const SizedBox(
                                       height: 10,
                                     ),
-                                    TextFieldtWidget(
+                                    PasswordFieldWidget(
                                       labelText: "Password",
                                       textEditingController:
                                           _passwordEditingController,
                                       icon: Icons.lock_clock_outlined,
                                       validator: (value) {
                                         if (value == null || value.isEmpty) {
-                                          return 'Please enter your password';
+                                          return 'Please enter password';
                                         }
                                         return null;
                                       },
@@ -192,7 +193,9 @@ class _loginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       print(e.toString());
-      showSnackBar(context, "Login fail, Try again !");
+      showSnackBar(context, "Login fail, Try again ! \n"+ e.toString());
+      Navigator.of(context)
+          .pushReplacement(MaterialPageRoute(builder: (context) => LoginScreen()));
     }
   }
 }

@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:iot_app/Layout/layout.dart';
 import 'package:iot_app/models/users.dart';
 import 'package:iot_app/screen/profile.dart';
 import 'package:iot_app/services/auth_firebase.dart';

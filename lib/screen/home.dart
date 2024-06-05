@@ -7,9 +7,9 @@ import 'package:iot_app/services/realtime_firebase.dart';
 import 'package:iot_app/widgets/Dashboard/dashboard_widgets.dart';
 import 'package:iot_app/models/users.dart';
 import 'package:iot_app/provider/data_user.dart';
+import 'package:iot_app/widgets/Dashboard/news_stream.dart';
 import 'package:iot_app/widgets/Notice/notice_snackbar.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,16 +22,19 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late Users user;
   bool isDataLoaded = false;
-  bool isSystemChossen = false;
+  bool isNotHaveSystem = false;
+  bool isHome = true;
 
   // Create List of SystemLog Objects
 
   List<Device> lDevice = [];
-  List<Widget> wDashBoard = [];
-  List<Widget> wDashBoard1 = [];
+  List<Widget> wNoSystem = [];
+  List<String> listIdSys = [];
+
   List<Widget> wSystems = [];
   List<Widget> wDevices = [];
-  String selectedDevice = "";
+  List<Widget> wLogs = [];
+  String selectedSystem = "";
 
   @override
   void initState() {
@@ -48,10 +51,13 @@ class _HomeScreenState extends State<HomeScreen> {
       if (userNew != user) {
         user = userNew;
         SharedPreferencesProvider.setDataUser(user);
-      }
+      } //
+
       // buid dash board
       await buildSystemList();
       setState(() {
+        listIdSys = user.getSystemIDs();
+
         isDataLoaded = true;
       });
     } catch (e) {
@@ -69,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
         SharedPreferencesProvider.setDataUser(user);
       }
       List<String> listSystems = userNew.getSystemIDs();
-      List<Widget> w = [];
+      List<Widget> wListSt = [];
 
       // parallel
       List<Future> futures = listSystems.map((e) async {
@@ -85,20 +91,23 @@ class _HomeScreenState extends State<HomeScreen> {
       for (var result in results) {
         List<Device> dvc = result[0];
         String systemName = result[1];
-        String e = result[2];
+        String idSystem = result[2];
 
-        w.add(
-          BuildHomeWidgets.buildDeviceCard1(
-            e == selectedDevice,
+        wListSt.add(
+          BuildHomeWidgets.buildSystemCard(
+            idSystem == selectedSystem,
             systemName,
             //'https://i.imgur.com/jFoufpl.jpeg',
             'https://img.freepik.com/premium-photo/concept-home-devices-multiple-houses-conected-networked_1059430-54450.jpg',
             onTap: () {
+              //system ontap
               setState(() {
-                fetchUserData();
+                isHome = false;
+                //fetchUserData();
                 buildSystemList();
-                selectedDevice = e;
+                selectedSystem = idSystem;
                 wDevices = [];
+                // build device
                 for (var device in dvc) {
                   wDevices.add(
                     BuildHomeWidgets.buildInfoSensor1(device, onPress: () {
@@ -152,25 +161,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               });
             },
+
+            onLongPress: () {
+              _settingSystem(idSystem);
+            },
           ),
         );
       }
 
       setState(() {
-        w.isEmpty ? isSystemChossen = true : wSystems = w;
+        wListSt.isEmpty ? isNotHaveSystem = true : isNotHaveSystem = false;
+        wSystems = wListSt;
 
-        wDashBoard = [
+        wNoSystem = [
           BuildHomeWidgets.buildInfoCard(
               "Bạn chưa lắp đặt hệ thống thiết bị nào",
               "Hãy lắp đặt các thiết bị an toàn, để bảo vệ bản thân, gia đình và mọi người xung quanh.",
               "Hướng cài đặt và sử dụng thiết bị",
               onTap: () => _launchUrl(Uri.parse('https://shopee.vn/'))),
-          const SizedBox(height: 20),
-          BuildHomeWidgets.buildInfoCard(
-            "Nhà/Công trình bạn theo dõi",
-            "Bạn muốn theo dõi hoạt động an toàn của khu vực khác?",
-            "Quét mã gia nhập ngay",
-            onTap: () => _launchUrl(Uri.parse('https://shopee.vn/')),
+          const SizedBox(
+            height: 20,
           ),
         ];
       });
@@ -185,6 +195,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final TextEditingController systemIDcontroller = TextEditingController();
     final TextEditingController systemKeycontroller = TextEditingController();
+    List<Widget> wHome = [
+      Column(
+        children: [
+          Container(
+            constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.9),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [buildInfoLogs(idSystem: listIdSys)],
+            ),
+          ),
+        ],
+      ),
+    ];
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FA),
       appBar: AppBar(
@@ -209,6 +233,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
+                          BuildHomeWidgets.buildDeviceCard("Home", Icons.home,
+                              onTap: () {
+                            setState(() {
+                              isHome = true;
+                              selectedSystem = "Home";
+                              buildSystemList();
+                            });
+                          }),
                           ...wSystems,
                           BuildHomeWidgets.buildDeviceCard(
                             "Add Systems",
@@ -285,8 +317,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(
                       height: 20,
                     ),
-                    ...(isSystemChossen ? wDashBoard : wDashBoard1),
-                    ...wDevices,
+                    ...(isNotHaveSystem ? wNoSystem : []),
+                    ...(isHome ? wHome : wDevices),
                   ],
                 ),
               ),
@@ -329,5 +361,53 @@ class _HomeScreenState extends State<HomeScreen> {
     if (!await launchUrl(_url)) {
       throw Exception('Could not launch $_url');
     }
+  }
+
+  void _settingSystem(String idSystem) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.warning,
+                  color: Color.fromARGB(255, 255, 77, 7),
+                  size: 40.0,
+                ),
+                SizedBox(height: 10.0),
+                Text(
+                  "This action cannot be undone. \n Are you sure you want to delete?",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 14.0,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  print(idSystem);
+                  DataFirebase.removeSystem(idSystem);
+                  setState(() {
+                    fetchUserData();
+                    buildSystemList();
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: const Text('DELETE'),
+              ),
+            ],
+          );
+        });
   }
 }

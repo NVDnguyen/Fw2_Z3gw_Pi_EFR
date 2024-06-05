@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:iot_app/models/devices.dart';
 import 'package:iot_app/models/system_log.dart';
 import 'package:iot_app/models/users.dart';
+import 'package:iot_app/provider/data_user.dart';
 
 class DataFirebase {
   // get data user
@@ -178,34 +179,69 @@ class DataFirebase {
     return controller.stream;
   }
 
+  // remove systerm id
+  static Future<void> removeSystem(String idSystem) async {
+    try {
+      Users user = await SharedPreferencesProvider.getDataUser();
+      DatabaseReference deviceRef = FirebaseDatabase.instance
+          .ref()
+          .child('users')
+          .child(user.userID)
+          .child("systems")
+          .child(idSystem);
+      await deviceRef.remove();
+    } catch (e) {
+      print("Error remove system: ${e.toString()}");
+    }
+  }
+
   // stream logs
-  static Stream<List<SystemLog>> getStreamLogs(String idSystem) {
+  static Stream<List<SystemLog>> getStreamLogs(List<String> idSystems) {
     StreamController<List<SystemLog>> controller =
         StreamController<List<SystemLog>>();
+    List<StreamSubscription> subscriptions = [];
+    Map<String, List<SystemLog>> systemLogsMap = {};
 
-    DatabaseReference deviceRef = FirebaseDatabase.instance
-        .ref()
-        .child('Systems')
-        .child(idSystem)
-        .child("log");
-
-    StreamSubscription? subscription;
-
-    subscription = deviceRef.onValue.listen((event) {
-      if (event.snapshot.exists) {
-        final Map<dynamic, dynamic> data =
-            event.snapshot.value as Map<dynamic, dynamic>;
-        final List<SystemLog> logs = data.entries
-            .map((entry) => SystemLog.fromJson(entry.key, entry.value))
-            .toList();
-        controller.add(logs);
+    void handleError(error) {
+      if (!controller.isClosed) {
+        controller.addError(error);
       }
-    }, onError: (error) {
-      controller.addError(error);
-    });
+    }
+
+    for (String idSystem in idSystems) {
+      DatabaseReference deviceRef = FirebaseDatabase.instance
+          .ref()
+          .child('Systems')
+          .child(idSystem)
+          .child("log");
+
+      StreamSubscription subscription = deviceRef.onValue.listen((event) {
+        if (event.snapshot.exists) {
+          final Map<dynamic, dynamic> data =
+              event.snapshot.value as Map<dynamic, dynamic>;
+          final List<SystemLog> logs = data.entries
+              .map((entry) => SystemLog.fromJson(entry.key, entry.value))
+              .toList();
+
+          if (!controller.isClosed) {
+            systemLogsMap[idSystem] = logs;
+            // Flatten the map values into a single list
+            List<SystemLog> allLogs =
+                systemLogsMap.values.expand((logs) => logs).toList();
+            // Sort logs by timestamp in descending order
+            allLogs.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+            controller.add(allLogs);
+          }
+        }
+      }, onError: handleError);
+
+      subscriptions.add(subscription);
+    }
 
     controller.onCancel = () {
-      subscription?.cancel();
+      for (var subscription in subscriptions) {
+        subscription.cancel();
+      }
     };
 
     return controller.stream;

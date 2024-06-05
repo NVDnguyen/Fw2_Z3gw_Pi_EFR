@@ -44,13 +44,15 @@ class BuildHomeWidgets {
     );
   }
 
-  static Widget buildDeviceCard1(
+  static Widget buildSystemCard(
     bool selected,
     String title,
     String imageUrl, {
     required VoidCallback onTap,
+    required VoidCallback onLongPress,
   }) {
     return InkWell(
+      onLongPress: onLongPress,
       onTap: onTap,
       child: Container(
         width: 100,

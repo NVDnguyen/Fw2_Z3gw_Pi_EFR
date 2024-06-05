@@ -4,7 +4,6 @@ import 'package:iot_app/models/users.dart';
 import 'package:iot_app/screen/profile_setting.dart';
 import 'package:iot_app/screen/wellcome.dart';
 import 'package:iot_app/provider/data_user.dart';
-import 'package:iot_app/services/realtime_firebase.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -26,8 +25,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> fetchUserData() async {
     try {
       Users u = await SharedPreferencesProvider.getDataUser();
-      user = await DataFirebase.getUserRealTime(u);
-      SharedPreferencesProvider.setDataUser(user);
+      user = u;
+      // user = await DataFirebase.getUserRealTime(u);
+      // SharedPreferencesProvider.setDataUser(user);
       setState(() {
         isDataLoaded = true;
       });

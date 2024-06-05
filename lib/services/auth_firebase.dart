@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:iot_app/models/users.dart';
@@ -27,35 +25,39 @@ class AuthService {
         email: email,
         password: password,
       );
-      String userId = userCredential.user!.uid;
+      User? user = userCredential.user;
 
-      // Fetch data from Realtime Database
-      DatabaseReference userRef = FirebaseDatabase.instance
-          .ref()
-          .child('users')
-          .child(userCredential.user!.uid);
-      DataSnapshot snapshot = await userRef.get();
-      Map<dynamic, dynamic>? userData =
-          snapshot.value as Map<dynamic, dynamic>?;
+      if (user != null && user.emailVerified) {
+        // Fetch data from Realtime Database
+        DatabaseReference userRef = FirebaseDatabase.instance
+            .ref()
+            .child('users')
+            .child(userCredential.user!.uid);
+        DataSnapshot snapshot = await userRef.get();
+        Map<dynamic, dynamic>? userData =
+            snapshot.value as Map<dynamic, dynamic>?;
 
-      if (userData != null) {
-        // Create Users object from the retrieved data
-        Map<String, dynamic> systems = userData['systems'] != null
-            ? Map<String, dynamic>.from(userData['systems'])
-            : {};
+        if (userData != null) {
+          // Create Users object from the retrieved data
+          Map<String, dynamic> systems = userData['systems'] != null
+              ? Map<String, dynamic>.from(userData['systems'])
+              : {};
 
-        Users user = Users(
-          username: userData['user_name'],
-          address: userData['address'],
-          email: email,
-          password: password,
-          userID: userId,
-          image: userData['image'],
-          systems: systems,
-        );
-        return user;
+          Users user = Users(
+            username: userData['user_name'],
+            address: userData['address'],
+            email: email,
+            password: password,
+            userID: userCredential.user!.uid,
+            image: userData['image'],
+            systems: systems,
+          );
+          return user;
+        } else {
+          throw Exception("User data not found in database");
+        }
       } else {
-        throw Exception("User data not found in database");
+        throw Exception("Email not verified");
       }
     } catch (e) {
       print(e.toString());
@@ -71,19 +73,27 @@ class AuthService {
         email: user.email,
         password: user.password,
       );
-      String userId = userCredential.user!.uid;
+      User? firebaseUser = userCredential.user;
+      if (firebaseUser != null) {
+        String userId = firebaseUser.uid;
 
-      // Save user information to Realtime Database
-      DatabaseReference userRef =
-          FirebaseDatabase.instance.ref().child('users').child(userId);
-      await userRef.set({
-        'user_name': user.username,
-        'address': user.address,
-        'image': user.image,
-        'systems': user.systems,
-      });
+        // Send email verification
+        await firebaseUser.sendEmailVerification();
 
-      return true;
+        // Save user information to Realtime Database
+        DatabaseReference userRef =
+            FirebaseDatabase.instance.ref().child('users').child(userId);
+        await userRef.set({
+          'user_name': user.username,
+          'address': user.address,
+          'image': user.image,
+          'systems': user.systems,
+        });
+
+        return true;
+      } else {
+        return false;
+      }
     } catch (e) {
       print("Error registering user: $e");
       return false;
@@ -107,6 +117,16 @@ class AuthService {
     } catch (e) {
       print('Error updating user info: $e');
       return false;
+    }
+  }
+
+  // Resend verification email
+  Future<void> resendVerificationEmail(User user) async {
+    try {
+      await user.sendEmailVerification();
+    } catch (e) {
+      print('Error sending verification email: $e');
+      throw e;
     }
   }
 }

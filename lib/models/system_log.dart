@@ -4,13 +4,8 @@ class SystemLog {
 
   SystemLog(this.timestamp, this.message);
 
-  factory SystemLog.fromJson(String key, String value) {
-    final timestamp = key;
-    final message = value;
-    return SystemLog(timestamp, message);
-  }
-  @override
-  String toString() {
-    return 'SystemLog { timestamp: $timestamp, message: $message }';
+  // Assuming the JSON structure has the key as the timestamp and value as the log message
+  factory SystemLog.fromJson(String key, dynamic value) {
+    return SystemLog(key, value.toString());
   }
 }
