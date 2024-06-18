@@ -7,10 +7,13 @@ import re
 from datetime import datetime
 
 # Global variables
-log_file = "log.txt"
+log_file = "/home/pi/documents/Python/Fw_prj/log.txt" 
+log_out = "/home/pi/documents/Python/Fw_prj/log_z3gw.txt"
 MAX_LOG_SIZE_BYTES = 1024 
 last_written_content = None
+first = True # assume button unused, first run will exe some command t
 
+# iniit serial
 def init_serial(port):
     global ser
     try:
@@ -18,11 +21,41 @@ def init_serial(port):
     except Exception as e:
         print(f"Failed to initialize serial port {port}: {str(e)}")
         sys.exit(1)
-
+        
+# first init for z3gw
+def create_zigbee_network(serial_port):
+    init_serial(serial_port)
+    execute_command(f"/home/pi/Z3gateway_2 -p {serial_port} -b 115200")
+    
+    
+# open command for static node id
+def open_network():
+    cmds =[
+        "network leave"
+        "plugin network-creator start 1",
+        "plugin network-creator-security open-network"
+    ]
+    for cmd in cmds:
+        print(f"Executing custom command: {cmd}")
+        subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+    
+# open network command each clicked button
+def  button_clicked():
+    global first
+    if first :
+        first = False
+        return True
+    else:
+        return False
+    return True
+       
+# exe command and process data        
 def execute_command(cmd) -> str:
     try:
         print(f"Executing command: {cmd}")
         process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
         log_output = []
         while True:
             output = process.stdout.readline()
@@ -30,10 +63,15 @@ def execute_command(cmd) -> str:
                 break
             if output:
                 decoded_output = output.decode('utf-8').strip()
-                log_output.append(decoded_output)
-                if decoded_output.startswith('T'):
-                    # print(f"Command output: {decoded_output}")
+                log_output.append(decoded_output)                          
+                # Recieve data
+                if decoded_output.startswith('T'):                    
                     extract_payload(decoded_output)
+                # if button_clicked():
+                #     open_network()
+                # #print(f"Command output: {decoded_output}")
+                write_to_file(log_out,decoded_output)    
+                
         err = process.stderr.read().decode('utf-8').strip()
         if err:
             print(f"Error executing command: {cmd} - {err}")
@@ -41,14 +79,14 @@ def execute_command(cmd) -> str:
     except Exception as err:
         print(f"Execute command error: {str(err)}")
         return str(err)
-
+# process data payload
 def extract_payload(output):
     payload_pattern = r'payload\[(.*?)\]'
     match_payload = re.search(payload_pattern, output)
     if match_payload:
         payload_hex = match_payload.group(1)
         payload_int_list = [int(x, 16) for x in payload_hex.split()]
-        if len(payload_int_list) >= 7:  # Payload should have at least 7 bytes
+        if len(payload_int_list) >= 7:  
             source_high_byte = payload_int_list[0]
             source_low_byte = payload_int_list[1]
             source_node_id = (source_high_byte << 8) + source_low_byte
@@ -67,7 +105,7 @@ def extract_payload(output):
                 "Fire": fire,
                 "Alarm Bell": alarm_bell 
             }
-
+# write log
 def write_to_file(file_name, content):
     global last_written_content
     try:
@@ -78,16 +116,11 @@ def write_to_file(file_name, content):
         last_written_content = content
     except Exception as e:
         print(f"Write file {file_name} error: {str(e)}")
+        
 
-def create_zigbee_network(serial_port):
-    init_serial(serial_port)
-    execute_command(f"~/./Z3gateway_2 -p {serial_port} -b 115200")
 
-def main(serial_port):
-    create_zigbee_network(serial_port)
-    serial_log, network_status = read_serial_data()
-    print("Network Status:", network_status)
 
+# delete old log
 def check_and_delete_old_logs(file_name, max_size_bytes):
     try:
         if os.path.getsize(file_name) > max_size_bytes:
@@ -99,6 +132,13 @@ def check_and_delete_old_logs(file_name, max_size_bytes):
     except Exception as e:
         print(f"Error checking and deleting old logs: {str(e)}")
 
+
+# main
+def main(serial_port):
+    create_zigbee_network(serial_port)
+    serial_log, network_status = read_serial_data()
+    print("Network Status:", network_status)
+    
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Please provide the serial port")
