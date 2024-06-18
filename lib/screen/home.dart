@@ -1,8 +1,12 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:iot_app/constants/properties.dart';
 import 'package:iot_app/models/devices.dart';
+import 'package:iot_app/screen/profile.dart';
 import 'package:iot_app/services/realtime_firebase.dart';
 import 'package:iot_app/widgets/Dashboard/dashboard_widgets.dart';
 import 'package:iot_app/models/users.dart';
@@ -24,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isDataLoaded = false;
   bool isNotHaveSystem = false;
   bool isHome = true;
+  late String helloSTR = "";
 
   // Create List of SystemLog Objects
 
@@ -57,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
       await buildSystemList();
       setState(() {
         listIdSys = user.getSystemIDs();
+        helloSTR = "Hi, " + user.username + " !";
 
         isDataLoaded = true;
       });
@@ -109,55 +115,58 @@ class _HomeScreenState extends State<HomeScreen> {
                 wDevices = [];
                 // build device
                 for (var device in dvc) {
-                  wDevices.add(
-                    BuildHomeWidgets.buildInfoSensor1(device, onPress: () {
-                      // change name
-                      final TextEditingController newNameDevice =
-                          TextEditingController();
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const SizedBox(height: 16),
-                                TextField(
-                                  controller: newNameDevice,
-                                  decoration: const InputDecoration(
-                                    border: OutlineInputBorder(),
-                                    labelText: "New name",
-                                    prefixIcon:
-                                        Icon(Icons.devices_other_outlined),
-                                  ),
+                  Widget deviceWidget =
+                      BuildHomeWidgets.buildInfoSensor2(device, onPress: () {
+                    // change name
+                    final TextEditingController newNameDevice =
+                        TextEditingController();
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: newNameDevice,
+                                decoration: const InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: "New name",
+                                  prefixIcon:
+                                      Icon(Icons.devices_other_outlined),
                                 ),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Cancel'),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  updateDeviceName(device, newNameDevice.text);
-                                  setState(() {
-                                    fetchUserData();
-                                    buildSystemList();
-                                  });
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Next'),
                               ),
                             ],
-                          );
-                        },
-                      );
-                    }),
-                  );
-                  wDevices.add(const SizedBox(height: 20));
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Cancel'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                updateDeviceName(device, newNameDevice.text);
+                                setState(() {
+                                  fetchUserData();
+                                  buildSystemList();
+                                });
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Next'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  });
+                  if (device.fire > FIRE_THRESHOLD) {
+                    wDevices.insert(0, deviceWidget);
+                  } else {
+                    wDevices.add(deviceWidget);
+                  }
                 }
               });
             },
@@ -209,22 +218,38 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     ];
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          "FireWise",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        actions: [],
-      ),
-      body: isDataLoaded
-          ? SingleChildScrollView(
+    return isDataLoaded
+        ? Scaffold(
+            backgroundColor: const Color(0xFFF7F8FA),
+            appBar: AppBar(
+              backgroundColor: const Color(0xFFF7F8FA),
+              elevation: 0,
+              title: Text(
+                helloSTR,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (context) => const ProfileScreen()),
+                      );
+                    },
+                    child: CircleAvatar(
+                      backgroundImage: FileImage(File(user
+                          .image)), // Replace with the actual URL or asset image
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            body: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
@@ -233,11 +258,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          BuildHomeWidgets.buildDeviceCard("Home", Icons.home,
+                          BuildHomeWidgets.buildDeviceCard("Center", Icons.home,
                               onTap: () {
                             setState(() {
                               isHome = true;
-                              selectedSystem = "Home";
+                              selectedSystem = "H";
                               buildSystemList();
                             });
                           }),
@@ -322,9 +347,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-            )
-          : const Center(child: CircularProgressIndicator()),
-    );
+            ))
+        : const Center(
+            child:
+                CircularProgressIndicator(backgroundColor: Color(0xFFF7F8FA)));
   }
 
   Future<void> addSystem(String idSystem, String key) async {
@@ -399,6 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   print(idSystem);
                   DataFirebase.removeSystem(idSystem);
                   setState(() {
+                    wDevices = [];
                     fetchUserData();
                     buildSystemList();
                   });

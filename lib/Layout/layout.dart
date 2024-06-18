@@ -41,8 +41,8 @@ class _LayoutScreenState extends State<Layout> {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
+            topLeft: Radius.circular(0),
+            topRight: Radius.circular(0),
           ),
           child: BottomNavigationBar(
             backgroundColor: Colors.white,

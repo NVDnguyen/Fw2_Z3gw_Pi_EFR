@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:iot_app/models/users.dart';
+import 'package:iot_app/screen/my_system.dart';
 import 'package:iot_app/screen/profile_setting.dart';
 import 'package:iot_app/screen/wellcome.dart';
 import 'package:iot_app/provider/data_user.dart';
+import 'package:iot_app/services/realtime_firebase.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -24,12 +26,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> fetchUserData() async {
     try {
-      Users u = await SharedPreferencesProvider.getDataUser();
-      user = u;
-      // user = await DataFirebase.getUserRealTime(u);
-      // SharedPreferencesProvider.setDataUser(user);
+      user = await SharedPreferencesProvider.getDataUser();
+      Users u = await DataFirebase.getUserRealTime(user);
+
       setState(() {
         isDataLoaded = true;
+        if (u != user) {
+          SharedPreferencesProvider.setDataUser(u);
+        }
       });
     } catch (e) {
       print(e.toString());
@@ -39,94 +43,84 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromRGBO(247, 248, 250, 1),
+      backgroundColor: const Color.fromRGBO(247, 248, 250, 1),
       appBar: AppBar(
-        backgroundColor: Color.fromRGBO(247, 248, 250, 1),
-        iconTheme: IconThemeData(color: Colors.black),
+        backgroundColor: const Color.fromRGBO(247, 248, 250, 1),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: isDataLoaded
           ? SingleChildScrollView(
               child: Center(
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     children: [
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       CircleAvatar(
                         radius: 50,
                         backgroundImage: FileImage(File(user.image)),
                         backgroundColor: Colors.grey.shade200,
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text(
                         user.username,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         "@${user.username.toLowerCase().replaceAll(' ', '_')}",
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 16,
                           color: Colors.grey,
                         ),
                       ),
-                      SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ProfileSetting(),
-                            ),
-                          );
-                        },
-                        child: Text("Edit Profile"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              const Color.fromARGB(255, 227, 230, 235),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 40,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 50),
                       _buildProfileOption(
                         icon: Icons.settings,
                         text: "Settings",
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ProfileSetting(),
+                            ),
+                          );
+                        },
                       ),
-                      Divider(),
+                      const Divider(),
                       _buildProfileOption(
                         icon: Icons.device_hub_outlined,
                         text: "My Systems",
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MySystemScreen(),
+                              ));
+                        },
                       ),
-                      Divider(),
+                      const Divider(),
                       _buildProfileOption(
                         icon: Icons.group,
                         text: "Group ",
                         onTap: () {},
                       ),
-                      Divider(),
+                      const Divider(),
                       _buildProfileOption(
                         icon: Icons.attach_money_sharp,
                         text: "Donate",
                         onTap: () {},
                       ),
-                      Divider(),
+                      const Divider(),
                       _buildProfileOption(
                         icon: Icons.share,
                         text: "Share",
                         onTap: () {},
                       ),
-                      Divider(),
+                      const Divider(),
                       _buildProfileOption(
                         icon: Icons.logout,
                         text: "Log out",
@@ -139,7 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             )
-          : Center(
+          : const Center(
               child: CircularProgressIndicator(),
             ),
     );
@@ -154,9 +148,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       leading: Icon(icon, color: Colors.black),
       title: Text(
         text,
-        style: TextStyle(fontSize: 18),
+        style: const TextStyle(fontSize: 18),
       ),
-      trailing: Icon(Icons.arrow_forward_ios, color: Colors.grey),
+      trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey),
       onTap: onTap,
     );
   }

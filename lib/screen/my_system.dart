@@ -1,21 +1,21 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:iot_app/models/system_log.dart';
 import 'package:iot_app/models/users.dart';
 import 'package:iot_app/provider/data_user.dart';
 import 'package:iot_app/services/realtime_firebase.dart';
+import 'package:path/path.dart';
 
-class NewsScreen extends StatefulWidget {
+class MySystemScreen extends StatefulWidget {
+  const MySystemScreen({super.key});
+
   @override
-  _NewsScreenState createState() => _NewsScreenState();
+  State<MySystemScreen> createState() => _MySystemScreenState();
 }
 
-class _NewsScreenState extends State<NewsScreen> {
+class _MySystemScreenState extends State<MySystemScreen> {
   late Users user;
-
-  List<String> lSystem = [];
-
+  bool isDataLoaded = false;
+  String data = "";
   @override
   void initState() {
     super.initState();
@@ -24,6 +24,7 @@ class _NewsScreenState extends State<NewsScreen> {
 
   Future<void> fetchUserData() async {
     try {
+      //sys with cloud
       user = await SharedPreferencesProvider.getDataUser();
       Users userNew = await DataFirebase.getUserRealTime(user);
 
@@ -31,9 +32,11 @@ class _NewsScreenState extends State<NewsScreen> {
         user = userNew;
         SharedPreferencesProvider.setDataUser(user);
       }
+      // list id system
+      data = user.getSystems().toString();
 
       setState(() {
-        lSystem = user.getSystemIDs();
+        isDataLoaded = true;
       });
     } catch (e) {
       if (kDebugMode) {
@@ -44,15 +47,9 @@ class _NewsScreenState extends State<NewsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Stream<List<SystemLog>> listLog = DataFirebase.getStreamLogs(lSystem);
-    return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FA),
-      appBar: AppBar(
-        title: Text('News'),
-        backgroundColor: const Color(0xFFF7F8FA),
-      ),
-      body: Column(
-        children: [],
+    return Placeholder(
+      child: Center(
+        child: Text(data,style: TextStyle(fontSize: 18),),
       ),
     );
   }

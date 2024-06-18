@@ -109,8 +109,7 @@ class AuthService {
       await userRef.update({
         'user_name': user.username,
         'address': user.address,
-        'image': user.image,
-        'systems': user.systems,
+        'image': user.image
       });
 
       return true;

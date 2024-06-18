@@ -291,7 +291,9 @@ class BuildHomeWidgets {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: data.fire == FIRE_THRESHOLD
+                    ? Colors.white
+                    : const Color.fromARGB(255, 231, 128, 121),
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
@@ -314,17 +316,33 @@ class BuildHomeWidgets {
                           color: Colors.black,
                         ),
                       ),
-                      const SizedBox(width: 10),
+
+                      const Spacer(),
                       // warning
-                      data.fire > FIRE_THRESHOLD ||
-                              data.smoke > SMOKE_THRESHOLD ||
-                              data.temp > TEMP_THRESHOLD
+                      // data.fire > FIRE_THRESHOLD ||
+                      //         data.smoke > SMOKE_THRESHOLD ||
+                      //         data.temp > TEMP_THRESHOLD
+                      //     ? const Icon(
+                      //         Icons.warning,
+                      //         color: Color.fromARGB(255, 214, 75, 10),
+                      //         size: 20,
+                      //       )
+                      //     : const SizedBox(),
+                      const SizedBox(
+                        width: 10,
+                      ),
+
+                      data.active == 1
                           ? const Icon(
-                              Icons.warning,
-                              color: Color.fromARGB(255, 214, 75, 10),
+                              Icons.online_prediction_outlined,
+                              color: Color.fromARGB(255, 75, 153, 77),
                               size: 20,
                             )
-                          : const SizedBox(),
+                          : const Icon(
+                              Icons.online_prediction_outlined,
+                              color: Color.fromARGB(255, 126, 127, 128),
+                              size: 20,
+                            )
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -335,7 +353,7 @@ class BuildHomeWidgets {
                         icon: FontAwesomeIcons.fire,
                         label: 'Fire',
                         value: data.fire.toString(),
-                        color: data.fire > FIRE_THRESHOLD
+                        color: data.fire == FIRE_THRESHOLD
                             ? Colors.green
                             : Colors.red,
                       ),
@@ -343,7 +361,9 @@ class BuildHomeWidgets {
                         icon: FontAwesomeIcons.water,
                         label: 'Humidity',
                         value: data.hum.toString(),
-                        color: Colors.blue,
+                        color: data.fire == FIRE_THRESHOLD
+                            ? Colors.blue
+                            : Color.fromARGB(255, 127, 164, 194),
                       ),
                       _buildIconText(
                         icon: data.smoke < 50
@@ -399,5 +419,120 @@ class BuildHomeWidgets {
         ),
       ],
     );
+  }
+
+  static Widget buildInfoSensor2(Device device,
+      {required VoidCallback onPress}) {
+    Stream<Device> deviceStream = DataFirebase.getStreamDevice(device);
+    return StreamBuilder<Device>(
+        stream: deviceStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (!snapshot.hasData) {
+            return const Text('No device data');
+          }
+
+          final data = snapshot.data!;
+          return Padding(
+            padding: const EdgeInsets.only(
+                bottom: 20), // Add 20 spacing at the bottom
+            child: GestureDetector(
+              onLongPress: onPress,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white, // Default background color
+                  borderRadius: BorderRadius.circular(8),
+                  border: data.fire > FIRE_THRESHOLD
+                      ? Border.all(
+                          color: const Color.fromARGB(255, 230, 171, 167),
+                          width: 2)
+                      : null, // Add red border if condition is met
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          data.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const Spacer(),
+                        const SizedBox(width: 10),
+                        data.active == 1
+                            ? const Icon(
+                                Icons.online_prediction_outlined,
+                                color: Color.fromARGB(255, 75, 153, 77),
+                                size: 20,
+                              )
+                            : const Icon(
+                                Icons.online_prediction_outlined,
+                                color: Color.fromARGB(255, 126, 127, 128),
+                                size: 20,
+                              )
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildIconText(
+                          icon: FontAwesomeIcons.fire,
+                          label: 'Fire',
+                          value: data.fire.toString(),
+                          color: data.fire == FIRE_THRESHOLD
+                              ? Colors.green
+                              : Colors.red,
+                        ),
+                        _buildIconText(
+                            icon: FontAwesomeIcons.water,
+                            label: 'Humidity',
+                            value: data.hum.toString(),
+                            color: Colors.blue),
+                        _buildIconText(
+                          icon: data.smoke < 50
+                              ? FontAwesomeIcons.cloudversify
+                              : FontAwesomeIcons.cloud,
+                          label: 'Smoke',
+                          value: data.smoke.toString(),
+                          color: data.smoke < SMOKE_THRESHOLD
+                              ? const Color.fromARGB(255, 188, 217, 236)
+                              : const Color.fromARGB(255, 139, 136, 136),
+                        ),
+                        _buildIconText(
+                          icon: FontAwesomeIcons.temperatureEmpty,
+                          label: 'Temperature',
+                          value: data.temp.toString(),
+                          color: data.temp < TEMP_THRESHOLD
+                              ? const Color.fromARGB(255, 114, 202, 224)
+                              : Colors.red,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
   }
 }

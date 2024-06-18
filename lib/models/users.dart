@@ -91,6 +91,9 @@ class Users {
   List<String> getSystemIDs() {
     return systems.keys.toList();
   }
+  Map<String, dynamic> getSystems() {
+    return systems;
+  }
 
   // Phương thức kiểm tra người dùng có phải admin của system hay không
   bool isAdmin(String systemID) {
