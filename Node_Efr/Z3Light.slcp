@@ -1,0 +1,106 @@
+# Silicon Labs Project Configuration Tools: slcp, v0, Component selection file.
+project_name: Z3Light
+label: Z3Light
+author: Silicon Laboratories, Inc.
+description: This is a Zigbee 3.0 light application using NVM3 as the persistent storage.
+category: Zigbee Application
+filter:
+- name: Device Type
+  value: [SoC]
+- name: Project Difficulty
+  value: [Beginner]
+- name: Wireless Technology
+  value: [Zigbee]
+package: Zigbee
+quality: production
+readme:
+- {path: readme.html}
+source:
+- {path: main.c}
+- {path: app.c}
+tag: [prebuilt_demo]
+sdk: {id: gecko_sdk, version: 4.4.3}
+toolchain_settings: []
+component:
+- {id: EFR32MG24B310F1536IM48}
+- {id: brd2601b}
+- instance: [example]
+  id: cli
+- {id: emlib_iadc}
+- {id: iostream_recommended_stream}
+- {id: sensor_rht}
+- instance: [btn1]
+  id: simple_button
+- instance: [led0]
+  id: simple_led
+- {id: zigbee_application_bootloader}
+- {id: zigbee_basic}
+- {id: zigbee_color_control_server}
+- {id: zigbee_core_cli}
+- {id: zigbee_counters}
+- {id: zigbee_debug_print}
+- {id: zigbee_find_and_bind_target}
+- {id: zigbee_gp}
+- {id: zigbee_green_power_client}
+- {id: zigbee_green_power_client_cli}
+- {id: zigbee_green_power_common}
+- {id: zigbee_groups_server}
+- {id: zigbee_identify}
+- {id: zigbee_interpan}
+- {id: zigbee_level_control}
+- {id: zigbee_network_creator}
+- {id: zigbee_network_creator_security}
+- {id: zigbee_network_steering}
+- {id: zigbee_on_off}
+- {id: zigbee_pro_stack}
+- {id: zigbee_reporting}
+- {id: zigbee_scan_dispatch}
+- {id: zigbee_scenes}
+- {id: zigbee_source_route}
+- {id: zigbee_stack_diagnostics}
+- {id: zigbee_update_tc_link_key}
+- {id: zigbee_zcl_cli}
+- {id: zigbee_zcl_framework_core}
+- {id: zigbee_zll}
+- {id: zigbee_zll_commissioning_common}
+- {id: zigbee_zll_commissioning_server}
+- {id: zigbee_zll_identify_server}
+- {id: zigbee_zll_level_control_server}
+- {id: zigbee_zll_on_off_server}
+- {id: zigbee_zll_scenes_server}
+- {id: zigbee_zll_utility_server}
+config_file:
+- {path: config/zcl/zcl_config.zap, directory: zcl}
+configuration:
+- {name: SL_BOARD_ENABLE_VCOM, value: '1'}
+- condition: [iostream_usart]
+  name: SL_IOSTREAM_USART_VCOM_FLOW_CONTROL_TYPE
+  value: usartHwFlowControlCtsAndRts
+- condition: [iostream_eusart]
+  name: SL_IOSTREAM_EUSART_VCOM_FLOW_CONTROL_TYPE
+  value: eusartHwFlowControlCtsAndRts
+- {name: SL_CLI_MAX_INPUT_ARGUMENTS, value: '16'}
+- {name: SLI_ZIGBEE_PRIMARY_NETWORK_DEVICE_TYPE, value: SLI_ZIGBEE_NETWORK_DEVICE_TYPE_ROUTER}
+- {name: SLI_ZIGBEE_PRIMARY_NETWORK_SECURITY_TYPE, value: SLI_ZIGBEE_NETWORK_SECURITY_TYPE_3_0}
+- {name: SL_CLI_PROMPT_STRING, value: '"Z3Light>"'}
+- condition: [device_series_1]
+  name: NVM3_DEFAULT_NVM_SIZE
+  value: '36864'
+- condition: [device_series_2]
+  name: NVM3_DEFAULT_NVM_SIZE
+  value: '32768'
+- {name: SL_PSA_ITS_SUPPORT_V1_DRIVER, value: '0'}
+- {name: SL_PSA_ITS_SUPPORT_V2_DRIVER, value: '0'}
+- {name: SL_PSA_ITS_SUPPORT_V3_DRIVER, value: '1'}
+- condition: [freertos]
+  name: SL_STACK_SIZE
+  value: '1024'
+- condition: [micriumos_kernel]
+  name: SL_STACK_SIZE
+  value: '512'
+- {name: configTIMER_TASK_PRIORITY, value: '53'}
+- {name: configMAX_TASK_NAME_LEN, value: '30'}
+ui_hints:
+  highlight:
+  - {path: readme.html}
+

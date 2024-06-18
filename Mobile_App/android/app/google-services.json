@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "533473486533",
+    "firebase_url": "https://fire-cloud-f2f21-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "fire-cloud-f2f21",
+    "storage_bucket": "fire-cloud-f2f21.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:533473486533:android:4799123ed2cb062fe9b2ac",
+        "android_client_info": {
+          "package_name": "com.example.firewise_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJZSijFl2n6tCiVWsqZKZDX1uMqRdLClo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:533473486533:android:5ec1b06633641f7fe9b2ac",
+        "android_client_info": {
+          "package_name": "com.example.iot_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJZSijFl2n6tCiVWsqZKZDX1uMqRdLClo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

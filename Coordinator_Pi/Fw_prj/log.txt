@@ -1,0 +1,7 @@
+2024-06-18 22:58:35 - Node ID: 62996, Temperature: 33, Humidity: 62, Smoke: 58, Fire: 0, Alarm Bell: 0
+2024-06-18 22:58:40 - Node ID: 62996, Temperature: 33, Humidity: 62, Smoke: 58, Fire: 0, Alarm Bell: 0
+2024-06-18 22:58:45 - Node ID: 62996, Temperature: 33, Humidity: 62, Smoke: 58, Fire: 0, Alarm Bell: 0
+2024-06-18 22:58:50 - Node ID: 62996, Temperature: 33, Humidity: 62, Smoke: 58, Fire: 0, Alarm Bell: 0
+2024-06-18 22:58:55 - Node ID: 62996, Temperature: 33, Humidity: 62, Smoke: 58, Fire: 0, Alarm Bell: 0
+2024-06-18 22:59:00 - Node ID: 62996, Temperature: 33, Humidity: 62, Smoke: 58, Fire: 0, Alarm Bell: 0
+2024-06-18 22:59:15 - Node ID: 62996, Temperature: 33, Humidity: 62, Smoke: 58, Fire: 0, Alarm Bell: 0
