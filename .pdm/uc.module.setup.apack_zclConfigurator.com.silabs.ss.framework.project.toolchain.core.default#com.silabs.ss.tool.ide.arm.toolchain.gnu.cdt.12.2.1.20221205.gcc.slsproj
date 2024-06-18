@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="uc.module.setup.apack_zclConfigurator.com.silabs.ss.framework.project.toolchain.core.default#com.silabs.ss.tool.ide.arm.toolchain.gnu.cdt:12.2.1.20221205.gcc" propertyScope="project">
+  <folder name="autogen">
+    <file name="zap-cli.c" builtin="true" generated="true"/>
+    <file name="zap-cluster-command-parser.c" builtin="true" generated="true"/>
+    <file name="zap-cluster-command-parser.h" builtin="true" generated="true"/>
+    <file name="zap-command-structs.h" builtin="true" generated="true"/>
+    <file name="zap-command.h" builtin="true" generated="true"/>
+    <file name="zap-config.h" builtin="true" generated="true"/>
+    <file name="zap-enabled-incoming-commands.h" builtin="true" generated="true"/>
+    <file name="zap-event.c" builtin="true" generated="true"/>
+    <file name="zap-event.h" builtin="true" generated="true"/>
+    <file name="zap-id.h" builtin="true" generated="true"/>
+    <file name="zap-print.h" builtin="true" generated="true"/>
+    <file name="zap-tokens.h" builtin="true" generated="true"/>
+    <file name="zap-type.h" builtin="true" generated="true"/>
+  </folder>
+  <includePath uri="studio:/project/autogen"/>
+</project>
