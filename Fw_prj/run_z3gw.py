@@ -95,8 +95,8 @@ def extract_payload(output):
             smoke = payload_int_list[4]
             fire = payload_int_list[5]
             alarm_bell = payload_int_list[6]  
-            print(f"Node ID: {source_node_id}, Temperature: {temperature}, Humidity: {humidity}, Smoke: {smoke}, Fire: {fire}, Alarm Bell: {alarm_bell}")  # Thay đổi thông báo in ra màn hình
-            write_to_file(log_file, f"Node ID: {source_node_id}, Temperature: {temperature}, Humidity: {humidity}, Smoke: {smoke}, Fire: {fire}, Alarm Bell: {alarm_bell}")  # Thay đổi thông tin ghi vào file log
+            print(f"Node ID: {source_node_id}, Temperature: {temperature}, Humidity: {humidity}, Smoke: {smoke}, Fire: {fire}, Alarm Bell: {alarm_bell}")  
+            write_to_file(log_file, f"Node ID: {source_node_id}, Temperature: {temperature}, Humidity: {humidity}, Smoke: {smoke}, Fire: {fire}, Alarm Bell: {alarm_bell}") 
             return {
                 "Node ID": source_node_id,
                 "Temperature": temperature,
